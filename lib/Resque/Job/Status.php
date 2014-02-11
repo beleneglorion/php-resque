@@ -54,6 +54,7 @@ class Resque_Job_Status
             'status' => self::STATUS_WAITING,
             'updated' => time(),
             'started' => time(),
+            'message'=>''
         );
         Resque::redis()->set('job:' . $id . ':status', json_encode($statusPacket));
     }
@@ -91,11 +92,12 @@ class Resque_Job_Status
         if (!$this->isTracking()) {
             return;
         }
-
-        $statusPacket = array(
-            'status' => $status,
-            'updated' => time(),
-        );
+        $statusPacket = $this->getPacket();
+        if (!is_array($statusPacket)) {
+            $statusPacket = array();
+        }
+        $statusPacket['status'] =$status;
+        $statusPacket['updated'] = time();
         Resque::redis()->set((string) $this, json_encode($statusPacket));
 
         // Expire the status for completed jobs after 24 hours
@@ -103,6 +105,52 @@ class Resque_Job_Status
             Resque::redis()->expire((string) $this, 86400);
         }
     }
+
+    /**
+     * Add a message to job status
+     *
+     */
+    public function setMessage($message)
+    {
+        if (!$this->isTracking()) {
+            return;
+        }
+        $statusPacket = $this->getPacket();
+        $statusPacket['message'] =$message;
+        Resque::redis()->set((string) $this, json_encode($statusPacket));
+    }
+
+        /**
+     * Add a message to job status
+     *
+     */
+    public function getMessage()
+    {
+        if (!$this->isTracking()) {
+            return false;
+        }
+        $statusPacket = $this->getPacket();
+
+        return $statusPacket['message'];
+    }
+        /**
+     * Add a message to job status
+     *
+     */
+    public function getPacket()
+    {
+        if (!$this->isTracking()) {
+            return false;
+        }
+
+        $statusPacket = json_decode(Resque::redis()->get((string) $this), true);
+        if (!$statusPacket) {
+            return false;
+        }
+
+        return $statusPacket;
+    }
+
 
     /**
      * Fetch the status for the job being monitored.

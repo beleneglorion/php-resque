@@ -41,6 +41,15 @@ class Resque_Job_Status
     {
         $this->id = $id;
     }
+    /**
+     * Return the Job Id
+     *
+     * @return int
+     */
+    public function getJobId() {
+
+	return $this->id;
+    }
 
     /**
      * Create a new status monitor item for the supplied job ID. Will create
@@ -189,4 +198,6 @@ class Resque_Job_Status
     {
         return 'job:' . $this->id . ':status';
     }
+
+   
 }

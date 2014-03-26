@@ -129,9 +129,17 @@ class Resque_Job
      */
     public function getStatus()
     {
-        $status = new Resque_Job_Status($this->payload['id']);
-
-        return $status->get();
+        return $this->getJobStatus()->get();
+    }
+    
+    /**
+     * Return the status of the current job as oobject.
+     *
+     * @return \Resque_Job_Status The status of the job 
+     */
+    public function getJobStatus()
+    {
+        return  new Resque_Job_Status($this->payload['id']);
     }
 
     /**
